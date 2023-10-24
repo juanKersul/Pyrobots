@@ -1,0 +1,93 @@
+#robot-list {
+    margin: 1% 2%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#robot-list .block-robot {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 600px;
+    padding: 5px 10px 0px 10px;
+    flex: 0 1 600px;
+    margin: 10px;
+    background-color: lightgray;
+    box-shadow: 0 0 0 1px black;
+    border-radius: 15px;
+}
+
+#robot-list .block-robot p {
+    flex: 40%;
+    margin-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+}
+
+#robot-list .block-robot img {
+    width: 40px;
+    height: 40px;
+    border: solid 0.5px black;
+    background-color: yellow;
+    border-radius: 15px;
+}
+
+#robot-list .block-robot .RobotName {
+    flex-basis: 400px;
+    height: 20px;
+    margin: 12px 5px 5px 5px;
+    font-size: large;
+    font-weight: bold;
+}
+
+#robot-list .block-robot .RobotId {
+    flex: none;
+    flex-basis: 65px;
+    height: 20px;
+    margin: 5px 0px 5px 72px;
+    border: solid 0.5px black;
+    background-color: LimeGreen;
+    border-radius: 15px;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+}
+
+#robots-loading {
+    background-color: #d3f80000;
+    width: 80%;
+    margin: 10% 0 0 34%;
+}
+
+#robots-loading .message {
+    padding: 3%;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 40px;
+    color: #b8b8b8;
+}
+
+#robots-loading .spinner::before {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 52%;
+    left: 50%;
+    border-radius: 50%;
+    border: solid 5px #cfd0d1;
+    border-bottom-color: #1c87c9;
+    animation: 1.5s linear infinite spinner;
+    animation-play-state: inherit;
+    content: "";
+    transform: translate3d(-50%, -50%, 0);
+    will-change: transform;
+}
+
+@keyframes spinner {
+    0% {
+      transform: translate3d(-50%, -50%, 0) rotate(0deg);
+    }
+    100% {
+      transform: translate3d(-50%, -50%, 0) rotate(360deg);
+    }
+}

@@ -1,0 +1,146 @@
+#Misil {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: gray;
+}
+
+:root {
+    --xinitmis_0: ;
+    --yinitmis_0: ;
+    --xfinalmis_0: ;
+    --yfinalmis_0: ;
+    --xinitmis_1: ;
+    --yinitmis_1: ;
+    --xfinalmis_1: ;
+    --yfinalmis_1: ;
+    --xinitmis_2: ;
+    --yinitmis_2: ;
+    --xfinalmis_2: ;
+    --yfinalmis_2: ;
+    --xinitmis_3: ;
+    --yinitmis_3: ;
+    --xfinalmis_3: ;
+    --yfinalmis_3: ;
+}
+
+@keyframes animatemis_0 {
+    0% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xinitmis_0);
+        top: var(--yinitmis_0);
+        transform: translate(-0px, -0px);
+    }
+    70% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xfinalmis_0);
+        top: var(--yfinalmis_0);
+        transform: translate(-0px, -0px);
+    }
+    100% {
+        background-color: red;
+        width: 72.6px;
+        height: 72.6px;
+        opacity: 0%;
+        left: var(--xfinalmis_0);
+        top: var(--yfinalmis_0);
+        transform: translate(-33px, -33px);
+    }
+}
+
+@keyframes animatemis_1 {
+    0% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xinitmis_1);
+        top: var(--yinitmis_1);
+        transform: translate(-0px, -0px);
+    }
+    70% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xfinalmis_1);
+        top: var(--yfinalmis_1);
+        transform: translate(-0px, -0px);
+    }
+    100% {
+        background-color: red;
+        width: 72.6px;
+        height: 72.6px;
+        opacity: 0%;
+        left: var(--xfinalmis_1);
+        top: var(--yfinalmis_1);
+        transform: translate(-33px, -33px);
+    }
+}
+
+@keyframes animatemis_2 {
+    0% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xinitmis_2);
+        top: var(--yinitmis_2);
+        transform: translate(-0px, -0px);
+    }
+    70% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xfinalmis_2);
+        top: var(--yfinalmis_2);
+        transform: translate(-0px, -0px);
+    }
+    100% {
+        background-color: red;
+        width: 72.6px;
+        height: 72.6px;
+        opacity: 0%;
+        left: var(--xfinalmis_2);
+        top: var(--yfinalmis_2);
+        transform: translate(-33px, -33px);
+    }
+}
+
+@keyframes animatemis_3 {
+    0% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xinitmis_3);
+        top: var(--yinitmis_3);
+        transform: translate(-0px, -0px);
+    }
+    70% {
+        background-color: gray;
+        width: 7px;
+        height: 7px;
+        opacity: 100%;
+        left: var(--xfinalmis_3);
+        top: var(--yfinalmis_3);
+        transform: translate(-0px, -0px);
+    }
+    100% {
+        background-color: red;
+        width: 72.6px;
+        height: 72.6px;
+        opacity: 0%;
+        left: var(--xfinalmis_3);
+        top: var(--yfinalmis_3);
+        transform: translate(-33px, -33px);
+    }
+}

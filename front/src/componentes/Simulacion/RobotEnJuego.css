@@ -1,0 +1,145 @@
+#RobotEnJuego {
+    position: absolute;
+    width: 11.55px;
+    height: 11.55px;
+}
+
+#RobotEnJuego img {
+    display: block;
+    width: 11.55px;
+    height: 11.55px;
+}
+
+#RobotEnJuego .nombre {
+    position: absolute;
+    top: 2px;
+    font-size: 7px;
+}
+
+#RobotStats {
+    position: absolute;
+    width: 450px;
+    height: 125px;
+    left: 120px;
+    border: solid 4px black;
+    background-color: lightgrey;
+}
+
+#RobotStats img {
+    width: 40px;
+    height: 40px;
+    border: solid 1px black;
+    background-color: white;
+}
+
+#RobotStats .nombre {
+    position: absolute;
+    top: 10px;
+    left: 65px;
+    font-size: 25px;
+    word-spacing: 5px;
+}
+
+#RobotStats .maxvida {
+    position: absolute;
+    left: 15px;
+    top: 55px;
+    width: 350px;
+    height: 22px;
+    background-color: red
+}
+
+#RobotStats .vida {
+    position: absolute;
+    left: 15px;
+    top: 55px;
+    width: 350px;
+    height: 22px;
+    background-color: green
+}
+
+#RobotStats .vidatext {
+    position: absolute;
+    left: 380px;
+    top: 55px;
+    font-size: 25px;
+}
+
+#RobotStats .mira {
+    position: relative;
+    left: -20px;
+    top: 70px;
+    font-size: 25px;
+    word-spacing: 5px;
+}
+
+#RobotStats .motor {
+    position: relative;
+    left: 40px;
+    top: 70px;
+    font-size: 25px;
+    word-spacing: 5px;
+}
+
+:root {
+    --xinit_0: ;
+    --yinit_0: ;
+    --xfinal_0: ;
+    --yfinal_0: ;
+    --xinit_1: ;
+    --yinit_1: ;
+    --xfinal_1: ;
+    --yfinal_1: ;
+    --xinit_2: ;
+    --yinit_2: ;
+    --xfinal_2: ;
+    --yfinal_2: ;
+    --xinit_3: ;
+    --yinit_3: ;
+    --xfinal_3: ;
+    --yfinal_3: ;
+}
+
+@keyframes animate_0 {
+    from {
+        left: var(--xinit_0);
+        top: var(--yinit_0);
+    }
+    to {
+        left: var(--xfinal_0);
+        top: var(--yfinal_0);
+    }
+}
+
+@keyframes animate_1 {
+    from {
+        left: var(--xinit_1);
+        top: var(--yinit_1);
+    }
+    to {
+        left: var(--xfinal_1);
+        top: var(--yfinal_1);
+    }
+}
+
+@keyframes animate_2 {
+    from {
+        left: var(--xinit_2);
+        top: var(--yinit_2);
+    }
+    to {
+        left: var(--xfinal_2);
+        top: var(--yfinal_2);
+    }
+}
+
+@keyframes animate_3 {
+    from {
+        left: var(--xinit_3);
+        top: var(--yinit_3);
+    }
+    to {
+        left: var(--xfinal_3);
+        top: var(--yfinal_3);
+    }
+}
