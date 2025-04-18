@@ -1,8 +1,17 @@
-body {
+body, html {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+  height: 100%;
+  background-color: #1a1a2e; /* Apply dark background globally */
+  color: #e0e0e0; /* Set default text color for better contrast */
+  font-family: sans-serif; /* Optional: Set a default font */
+}
+
+#root {
+  height: 100%; /* Ensure the root element also takes full height */
+}
+
+body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -15,10 +15,10 @@ const getImageRobotsUser = (callback, robot_id) => {
     }
 };
 
-const sendDataRobot = () => {
+const sendDataRobot = (code) => {
     return {
         type: "SEND_DATA_ROBOT",
-        data: ""
+        data: code
     }
 };
 
