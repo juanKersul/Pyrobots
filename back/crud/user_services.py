@@ -3,14 +3,20 @@ from pony.orm import db_session, commit
 from schemas.iuser import User_create
 from cryptography.fernet import Fernet
 import jwt
+from jwt.jwk import OctetJWK
 from datetime import datetime, timedelta
 from decouple import config
 import random
 
 
+jwt_instance = jwt.JWT() # Create an instance for python-jwt library
+
 # se obtienen de env
-JWT_SECRET = config("secret")
+JWT_SECRET_STR = config("secret")
 JWT_ALGORITHM = config("algorithm")
+# Create JWK from the secret string (encoded to bytes)
+secret_key = OctetJWK(JWT_SECRET_STR.encode('utf-8'))
+
 JWT_EXPIRES = timedelta(1)
 KEY_CRYPT = config("KEY")
 
@@ -136,7 +142,7 @@ def get_payload(userID: str):
 
 def sign_JWT(userID: str):
     payload = get_payload(userID)
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    token = jwt_instance.encode(payload, key=secret_key, alg=JWT_ALGORITHM)
     return token
 
 
@@ -151,7 +157,7 @@ def decode_JWT(token: str):
         Dict[str, Any]: {"userID": "", "expiry": 0}
     """
     try:
-        decode_token = jwt.decode(token, JWT_SECRET, algorithms=JWT_ALGORITHM)
+        decode_token = jwt_instance.decode(token, key=secret_key, algorithms=[JWT_ALGORITHM])
         return decode_token
     except:
         return {"userID": "", "expiry": 0}
