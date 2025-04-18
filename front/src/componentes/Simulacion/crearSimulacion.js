@@ -29,7 +29,7 @@ function CheckRobots({addRobot, removeRobot}){
 
   return (
     <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            {lista.map((value, i) => ( 
+            {Array.isArray(lista) && lista.map((value, i) => ( 
                 <ListItem key={value.name} disablePadding>
                   <ListItemButton onClick={() => checkedChange(i)} dense>
                     <ListItemIcon>

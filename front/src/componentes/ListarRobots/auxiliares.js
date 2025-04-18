@@ -23,7 +23,7 @@ function addNewImage(setListResults, robotImage, robot){
 
 function getImageRobotsAndSaveInListImage(robots, getImageRobotsUser, setListResults){
     setListResults([]);
-    robots.forEach( robot => {
+    Array.isArray(robots) && robots.forEach( robot => {
         const setRobotImage = (robotImage) => addNewImage(setListResults, robotImage, robot);
         getImageRobotsUser(setRobotImage, robot.id);
     });

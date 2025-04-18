@@ -64,7 +64,7 @@ function ListarPartida({getDataGamesUser}) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {listPartidas.map((row) => (
+          {Array.isArray(listPartidas) && listPartidas.map((row) => (
             <StyledTableRow user={row.id} key={row.id}>
               <StyledTableCell component="th" scope="row">
                 {row.name}
