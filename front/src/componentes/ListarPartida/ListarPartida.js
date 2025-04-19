@@ -2,6 +2,7 @@ import { Box, Button, Typography, Tab, Tabs, Paper, Table, TableBody, TableCell,
 import { getDataGamesUser } from '../../store/Partidas/actions';
 import UnirsePatida from '../UnirsePartida/UnirsePartida';
 import React, { useState, useEffect } from "react";
+import { useHistory } from 'react-router-dom';
 import { connect } from 'react-redux';
 import InfoIcon from '@mui/icons-material/Info';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -65,6 +66,7 @@ function ListarPartida({ getDataGamesUser }) {
   const [viewMode, setViewMode] = useState('tarjetas');
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const history = useHistory();
 
   // Obtener datos de partidas
   useEffect(() => {
@@ -169,6 +171,7 @@ function ListarPartida({ getDataGamesUser }) {
           color="primary" 
           startIcon={<AddIcon />}
           sx={{ borderRadius: '4px' }}
+          onClick={() => history.push('/crearPartida')}
         >
           Crear Nueva Sesión
         </Button>
