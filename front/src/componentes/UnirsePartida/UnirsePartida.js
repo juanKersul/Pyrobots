@@ -1,4 +1,4 @@
-import { Button, Box, Modal, MenuItem, InputLabel, FormControl, TextField } from '@mui/material';
+import { Button, Box, Modal, MenuItem, InputLabel, FormControl, TextField, Typography } from '@mui/material';
 import Select from '@mui/material/Select';
 import { useHistory } from "react-router-dom";
 import { useState, useEffect, useRef} from 'react';
@@ -20,18 +20,35 @@ const SelectRobot = ({selectedRobotID, setSelectedRobotID}) => {
     return (
         <div>
             <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Seleccione su Robot
+                <InputLabel 
+                    id="demo-simple-select-label"
+                    sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                >
+                    Seleccione su Robot
                 </InputLabel>
                 <Select
                     sx={{
-                        background: 'white',
-                        color: 'black',
+                        bgcolor: 'rgba(255, 255, 255, 0.09)',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(255, 255, 255, 0.23)',
+                        },
+                        '& .MuiSvgIcon-root': {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                        },
+                        color: 'white',
                     }}
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={selectedRobotID}
                     label="Robot"
                     onChange={handleChange}
+                    variant="outlined"
                 >
                     {
                         (Array.isArray(listRobots) && listRobots.length) ?
@@ -141,47 +158,87 @@ const InputModal = (props) => {
                 <Box
                     component="form"
                     sx={{
-                        '& > :not(style)': { m: 1, width: '25ch' },
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: '#333',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
                     }}
                     noValidate
                     autoComplete="off"
                 >
-                {passRequired && 
-                    <TextField
-                    sx={{
-                        background: 'white',
-                        color: 'black',
-                    }}
-                    required
-                    id="standard-password-input"
-                    label="Password Match"
-                    type="password"
-                    autoComplete="current-password"
-                    variant="standard"
-                    value = {passMatch}
-                    onChange = {onChangePasswordMatch}
-                    />
-                }
-                {
-                    !joined &&
-                    <SelectRobot 
-                        selectedRobotID = {selectedRobotID}
-                        setSelectedRobotID = {setSelectedRobotID}
-                    />
-                }
-                {
-
-                }
-                <Button variant="contained" onClick={handleCloseToLobby}>
-                    {
-                        joined ? 
-                        'Ir al Lobby':
-                        'Si has seleccionado a tu robot puedes ir al Lobby'
+                    <Typography id="modal-modal-title" variant="h6" component="h2" sx={{ color: 'white', mb: 2 }}>
+                      { joined ? 'Ir al Lobby' : 'Unirse a la Partida' }
+                    </Typography>
+                    {passRequired &&
+                        <TextField
+                            required
+                            id="standard-password-input"
+                            label="Password Match"
+                            type="password"
+                            autoComplete="current-password"
+                            variant="outlined"
+                            InputLabelProps={{
+                                sx: { color: 'rgba(255, 255, 255, 0.7)' },
+                            }}
+                            InputProps={{
+                                sx: { 
+                                    color: 'white',
+                                    bgcolor: 'rgba(255, 255, 255, 0.09)',
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'rgba(255, 255, 255, 0.23)',
+                                    },
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: 'primary.main',
+                                    },
+                                },
+                            }}
+                            value = {passMatch}
+                            onChange = {onChangePasswordMatch}
+                            fullWidth
+                        />
                     }
-                </Button>
-                <Button variant="contained" onClick={handleClose}>
-                    Cerrar
-                </Button>
+                    {
+                        !joined &&
+                        <SelectRobot
+                            selectedRobotID = {selectedRobotID}
+                            setSelectedRobotID = {setSelectedRobotID}
+                        />
+                    }
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                        <Button 
+                            variant="outlined" 
+                            onClick={handleClose}
+                            sx={{ 
+                                color: 'rgba(255, 255, 255, 0.7)', 
+                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                '&:hover': {
+                                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                                    bgcolor: 'rgba(255, 255, 255, 0.08)'
+                                }
+                            }}
+                        >
+                            Cerrar
+                        </Button>
+                        <Button variant="contained" onClick={handleCloseToLobby}>
+                            {
+                                joined ?
+                                'Ir al Lobby':
+                                'Unirse'
+                            }
+                        </Button>
+                    </Box>
                 </Box>
             </Modal>
             </div>
