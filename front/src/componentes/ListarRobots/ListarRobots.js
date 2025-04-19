@@ -9,7 +9,8 @@ import {getDataRobotsUser, getImageRobotsUser} from '../../store/robots/actions'
 import React, {useEffect, useState} from "react";
 import {connect} from 'react-redux';
 import './ListarRobots.css';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import swal from 'sweetalert';
 
 // Componente para cada tarjeta de robot
 const RobotCard = ({ robot, onEdit, onBattle }) => {
@@ -64,6 +65,7 @@ function ListarRobots({getDataRobotsUser, getImageRobotsUser}){
     const [filterType, setFilterType] = useState('Todos');
     const [sortOrder, setSortOrder] = useState('Más recientes');
     const [isLoading, setIsLoading] = useState(true);
+    const history = useHistory(); // Hook para la navegación
     
     // Cargar datos de robots
     useEffect(() => {
@@ -127,16 +129,51 @@ function ListarRobots({getDataRobotsUser, getImageRobotsUser}){
         }
     }, [searchTerm, filterType, sortOrder, robots]);
     
-    // Manejar la edición de un robot
+    // Manejar la edición de un robot - Ahora es funcional
     const handleEditRobot = (robot) => {
         console.log("Editar robot:", robot);
-        // Aquí se implementaría la navegación a la página de edición
+
+        // Guardar el robot a editar en localStorage para que el componente de edición pueda acceder a él
+        // CONSIDERATION: Since AgregarRobot now fetches data directly via API,
+        // this localStorage step might be redundant, unless /subirRobot component relies on it.
+        localStorage.setItem('robotToEdit', JSON.stringify(robot));
+
+        // Redireccionar a la página de edición del robot - CHANGE THE PATH HERE
+        setTimeout(() => { // Pequeño retraso para asegurar que localStorage se actualiza
+            // history.push(`/agregarRobot?edit=true&id=${robot.id}`); // <-- OLD PATH
+            history.push(`/subirRobot?edit=true&id=${robot.id}`); // <-- NEW PATH
+        }, 100);
     };
     
     // Manejar el inicio de una batalla con un robot
     const handleBattleRobot = (robot) => {
         console.log("Iniciar batalla con robot:", robot);
-        // Aquí se implementaría la navegación a la página de batalla
+        // Aquí redirigimos a la página de batalla
+        history.push(`/iniciarPartida?robot_id=${robot.id}`);
+    };
+
+    // Función para refrescar la lista de robots después de una operación
+    const refreshRobotList = () => {
+        setIsLoading(true);
+        setResponseDataRobot(false); // Esto disparará el flujo para obtener robots nuevamente
+    };
+
+    // Manejar la eliminación de un robot (podríamos implementarlo en el futuro)
+    const handleDeleteRobot = (robot) => {
+        swal({
+            title: "¿Estás seguro?",
+            text: `¿Deseas eliminar el robot ${robot.name}?`,
+            icon: "warning",
+            buttons: ["Cancelar", "Eliminar"],
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                // Aquí iría la lógica para eliminar el robot en el backend
+                swal("Esta función aún no está implementada", {
+                    icon: "info",
+                });
+            }
+        });
     };
     
     // Contar robots activos (simulado para el ejemplo)

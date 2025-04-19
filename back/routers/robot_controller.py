@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from crud import robot_service
-from crud.robot_service import add_robot,get_image_name
+from crud.robot_service import add_robot, get_image_name, get_code_by_id
 import shutil
 from typing import Optional
 import base64
@@ -117,3 +117,95 @@ def get_image(token,robot_id):
     with open(path, 'rb') as f:
         base64image = base64.b64encode(f.read())
     return base64image
+
+@robot_end_points.get("/robot/code")
+def get_robot_code(token: str, robot_id: int):
+    """Obtener el código fuente de un robot
+
+    Args:
+        token (str): Token de autenticación
+        robot_id (int): ID del robot
+
+    Returns:
+        str: Código fuente del robot
+    """
+    try:
+        # Verificar que el usuario sea dueño del robot
+        code = get_code_by_id(token, robot_id)
+        
+        if isinstance(code, str) and "error" in code.lower():
+            raise HTTPException(status_code=403, detail=code)
+        
+        return code
+    except Exception as e:
+        error_msg = str(e)
+        if "404" in error_msg or "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Robot no encontrado")
+        if "403" in error_msg or "permiso" in error_msg.lower() or "autoriza" in error_msg.lower():
+            raise HTTPException(status_code=403, detail="No tienes permiso para acceder a este robot")
+        
+        raise HTTPException(status_code=500, detail=f"Error al obtener código: {error_msg}")
+
+@robot_end_points.put("/robot/update")
+async def robot_update(
+    *, config: UploadFile, avatar: Optional[UploadFile] = File(None), name: str, tkn: str, robot_id: int):
+    """Actualizar un robot existente
+
+    Args:
+        config (UploadFile): archivo del robot actualizado.
+        avatar (UploadFile, optional): imagen del robot actualizada.
+        name (str): nombre del robot (sin cambios).
+        tkn (str): token del usuario.
+        robot_id (int): ID del robot a actualizar.
+
+    Raises:
+        HTTPException: 404: El robot no existe.
+        HTTPException: 403: No tienes permiso para editar este robot.
+        HTTPException: 422: El nombre del Robot no coincide con el robot a actualizar.
+        HTTPException: 440: El token no es correcto o está expirado.
+
+    Returns:
+        dict: Mensaje de éxito.
+    """
+    try:
+        no_avatar = True
+        if avatar is not None:
+            avatar_name = "P" + avatar.filename
+            no_avatar = False
+        else:
+            avatar_name = None
+        
+        # Llamar al servicio para actualizar el robot
+        msg = robot_service.update_robot(config, avatar_name, name, tkn, robot_id)
+        
+        # Si hay error, lanzar excepción HTTP correspondiente
+        if "no existe" in msg:
+            raise HTTPException(status_code=404, detail=msg)
+        if "permiso" in msg:
+            raise HTTPException(status_code=403, detail=msg)
+        if "requisitos" in msg or "coincide" in msg:
+            raise HTTPException(status_code=422, detail=msg)
+        if "Token" in msg:
+            raise HTTPException(status_code=440, detail="Sesión expirada")
+        
+        # Procesamos la respuesta exitosa
+        if ":" in msg:
+            parts = msg.split(":")
+            username = parts[1]
+            if len(parts) > 2:
+                avatar_name = parts[2]
+            msg = parts[0]
+            
+            # Guardar el archivo de configuración actualizado
+            store_config(config, username)
+            
+            # Guardar el avatar si se proporcionó uno nuevo
+            if not no_avatar:
+                avatar.filename = avatar_name
+                store_avatar(avatar)
+        
+        return {"msg": msg}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar robot: {str(e)}")

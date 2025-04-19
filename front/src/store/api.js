@@ -7,7 +7,9 @@ const endpoints = {
         listRobots: '/robots',
         imageRobot: '/image',
         runSimulation: '/simulation/add',
-        register: '/register'
+        register: '/register',
+        getRobotCode: '/robot/code',
+        updateRobot: '/robot/update'
 };
 
 function alertSwal(msg, icon){

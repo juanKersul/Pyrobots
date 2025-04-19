@@ -30,7 +30,7 @@ class default2(Robot):
                     self.point_scanner(self.searching_last_direction, 1)
                 else:
                     self.state = "attacking"
-                    self.drive(self.searching_last_direction, 0)
+                    self.drive(self.searching_last_direction, 2)
                     self.point_scanner(self.searching_last_direction, 1)
             elif self.state == "moving and attacking":
                 self.last_scan = self.scanned()

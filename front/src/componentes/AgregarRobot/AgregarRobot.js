@@ -4,6 +4,9 @@ import { sendDataRobot, modifyName, modifyAvatar, modifyConfig } from '../../sto
 import IdeEditor from '../IdeEditor';
 import { API, endpoints, getToken, alertSwal } from '../../store/api';
 import swal from 'sweetalert';
+import { serviceUpdateRobot } from '../../store/robots/serviceRobots';
+import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 // Robot statistics component - extracts stats from robot code
 const RobotStats = ({ code }) => {
@@ -93,10 +96,19 @@ const countPatternOccurrences = (text, patterns) => {
   }, 0);
 };
 
-const AvatarUploader = ({ modifyAvatar }) => (
+const AvatarUploader = ({ modifyAvatar, previewUrl }) => (
   <div style={{ border: '1px solid #444', padding: '15px', borderRadius: '5px' }}>
     <h2>Avatar del Robot</h2>
-    {/* Basic file input, can be replaced with a fancier component */}
+    {previewUrl && (
+      <div style={{ marginBottom: '15px', textAlign: 'center' }}>
+        <p>Avatar actual:</p>
+        <img 
+          src={previewUrl} 
+          alt="Vista previa del avatar" 
+          style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '5px', marginBottom: '10px' }} 
+        />
+      </div>
+    )}
     <input
       style={{ display: 'block', margin: '10px 0' }}
       type="file"
@@ -105,7 +117,6 @@ const AvatarUploader = ({ modifyAvatar }) => (
       name="avatar"
       onChange={(e) => modifyAvatar(e.target.files[0])}
     />
-    {/* Add image preview logic here if needed */}
   </div>
 );
 
@@ -165,6 +176,14 @@ const uploadRobotToBackend = async (codeFile, avatarFile, robotName) => {
 };
 
 const UserRobotCreate = ({ sendDataRobot, modifyName, modifyAvatar, modifyConfig }) => {
+  console.log("--- UserRobotCreate Component Rendered ---");
+
+  // Get URL search parameters outside useEffect
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const isEdit = urlParams.get('edit') === 'true';
+  const id = urlParams.get('id'); // Now 'id' is defined in the component scope
+
   // Updated initial code example
   const initialCode = `from routers.robot.robot_class import Robot
 
@@ -203,6 +222,157 @@ class default1(Robot):
   const [isValidRobot, setIsValidRobot] = useState(true);
   const [robotName, setRobotName] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [robotId, setRobotId] = useState(null);
+  const [pageTitle, setPageTitle] = useState('Crear Robot');
+
+  // Fetch robot data when in edit mode
+  useEffect(() => {
+    console.log("--- useEffect Hook Executed ---");
+
+    console.log(`useEffect - isEdit: ${isEdit}, id: ${id}`);
+
+    if (isEdit && id) {
+      console.log("Modo edición activado para robot ID:", id);
+      setIsEditMode(true);
+      setRobotId(id);
+      setPageTitle('Editar Robot');
+
+      const fetchRobotDataForEdit = async () => {
+        try {
+          const currentToken = getToken();
+          if (!currentToken) {
+            throw new Error("No authentication token found.");
+          }
+
+          console.log("1. Solicitando lista de robots...");
+          const listResponse = await API.get(endpoints.listRobots, {
+            // Assuming listRobots now expects token in header based on other calls
+            // headers: { 'Authorization': `Bearer ${currentToken}` }  <-- REVERT THIS
+            // If it still uses query param: params: { token: currentToken } <-- USE THIS INSTEAD
+            params: { token: currentToken }
+          });
+
+          if (!listResponse.data || !Array.isArray(listResponse.data)) {
+            throw new Error("Failed to fetch or invalid robot list format.");
+          }
+
+          console.log("Lista de robots recibida, buscando ID:", id);
+          // Find the robot by ID (ensure type consistency, ID from URL is string)
+          const robotFromList = listResponse.data.find(robot => robot.id.toString() === id);
+
+          if (!robotFromList) {
+            throw new Error(`Robot with ID ${id} not found in the list.`);
+          }
+
+          console.log("Robot encontrado en la lista:", robotFromList);
+
+          // Set Name
+          const cleanName = robotFromList.name.includes('_') ? robotFromList.name.split('_')[0] : robotFromList.name;
+          setRobotName(cleanName);
+          modifyName(cleanName);
+
+          // Set initial avatar preview from list data if available (e.g., if list includes base64 image)
+          if (robotFromList.image) { // Assuming list might contain 'image' as base64
+             setAvatarPreview(`data:image/png;base64,${robotFromList.image}`);
+             console.log("Vista previa del avatar establecida desde la lista.");
+          }
+
+          // Fetch Code and Image in parallel
+          console.log("2. Solicitando código e imagen para el robot ID:", id);
+          const [codeResponse, imageResponse] = await Promise.all([
+            API.get(endpoints.getRobotCode, {
+              // Pass token and robot_id as query params as per original service
+              params: { token: currentToken, robot_id: id }
+            }),
+            API.get(endpoints.imageRobot, {
+              // Pass token and robot_id as query params as per original service
+              params: { token: currentToken, robot_id: id }
+            })
+          ]);
+
+          // Process Code
+          if (codeResponse.data) {
+            console.log("Código recibido, longitud:", codeResponse.data.length);
+            setRobotCode(codeResponse.data);
+            modifyConfig(codeResponse.data);
+          } else {
+            console.warn("La respuesta de código no contiene datos, usando fallback.");
+            setRobotCode(initialCode.replace('default1', cleanName));
+            modifyConfig(initialCode.replace('default1', cleanName));
+          }
+
+          // Process Image (overwrites preview from list if image service returns something)
+          if (imageResponse.data) {
+             // Assuming imageResponse.data is base64 string
+             const imageUrl = `data:image/png;base64,${imageResponse.data}`;
+             setAvatarPreview(imageUrl);
+             console.log("Vista previa del avatar actualizada desde el servicio de imagen.");
+          } else {
+             console.warn("La respuesta de imagen no contiene datos.");
+             // Keep preview from list if image service fails, or set null if neither had it
+             if (!robotFromList.image) setAvatarPreview(null);
+          }
+
+          console.log("Datos del robot (nombre, código, avatar) cargados para edición.");
+
+        } catch (error) {
+          console.error("Error al cargar datos del robot para edición:", error);
+          let errorMsg = error.message || "Error desconocido al cargar datos del robot.";
+
+          if (axios.isAxiosError(error) && error.response) {
+             console.error("Detalles del error de API:", {
+                 status: error.response.status,
+                 data: error.response.data,
+                 config: error.config // Log request config too
+             });
+             errorMsg = `Error ${error.response.status}: ${error.response.data?.detail || error.message}`;
+             if (error.response.status === 401 || error.response.status === 403) {
+                 errorMsg = "Sesión inválida o expirada.";
+             } else if (error.response.status === 404) {
+                 // Check which request failed if possible from error.config.url
+                 errorMsg = `Recurso no encontrado (${error.config.url}).`;
+             }
+          } else if (!axios.isCancel(error)) {
+             // Handle non-API errors or non-response errors
+             console.error("Error no relacionado con API o sin respuesta:", error);
+          }
+
+          swal({
+            title: "Error al Cargar Robot",
+            text: errorMsg,
+            icon: "error"
+          }).then(() => {
+             if (error.response?.status === 404 || error.response?.status === 401 || error.response?.status === 403 || error.message.includes("not found")) {
+                window.location.href = "/"; // Redirect on critical errors
+             }
+          });
+          // Fallback to initial state
+          setRobotCode(initialCode);
+          modifyConfig(initialCode);
+          setRobotName('');
+          modifyName('');
+          setAvatarPreview(null);
+        }
+      };
+
+      fetchRobotDataForEdit();
+    } else {
+        console.log("useEffect - Modo creación o sin ID");
+        // Set initial state for CREATE mode
+        setRobotCode(initialCode);
+        modifyConfig(initialCode); // Update Redux store if needed
+        setRobotName(''); // Clear name for creation mode
+        modifyName(''); // Clear Redux name
+        setAvatarPreview(null); // Clear avatar preview
+        setIsEditMode(false);
+        setRobotId(null);
+        setPageTitle('Crear Robot');
+    }
+    // Dependencies: Include things that, if changed, should trigger refetch/reset
+    // 'id' and 'isEdit' are now stable within this render cycle, but including them clarifies dependencies
+  }, [initialCode, modifyConfig, modifyName, id, isEdit]);
 
   // Validate code whenever it changes
   useEffect(() => {
@@ -223,6 +393,12 @@ class default1(Robot):
   const handleAvatarChange = (file) => {
     setAvatar(file);
     modifyAvatar(file);
+    
+    // Crear una URL para previsualizar la imagen
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAvatarPreview(url);
+    }
   };
 
   const handleSave = async () => {
@@ -244,16 +420,49 @@ class default1(Robot):
       return;
     }
     
-    console.log("Guardando Robot...");
-    console.log("Nombre:", robotName);
-    console.log("Code:", robotCode);
+    console.log(`${isEditMode ? 'Actualizando' : 'Guardando'} Robot...`);
     
-    // Create a Python file from the code string
+    // Crear archivo con el código del robot
     const filename = `${robotName.trim()}.py`;
     const codeFile = createFileFromCode(robotCode, filename);
     
-    // Send the code file and avatar to the backend
-    await uploadRobotToBackend(codeFile, avatar, robotName);
+    if (isEditMode) {
+      // Usar el servicio real de actualización en lugar de la simulación
+      swal({
+        title: "Actualizando robot",
+        text: "Actualizando robot en el servidor...",
+        icon: "info",
+        buttons: false,
+        closeOnClickOutside: false,
+      });
+      
+      // Preparar los datos del robot para la actualización
+      const robotData = {
+        name: robotName,
+        config: codeFile,
+        avatar: avatar // Puede ser null si no se cambió
+      };
+      
+      // Llamar al servicio de actualización
+      const result = await serviceUpdateRobot(robotData, robotId);
+      
+      if (result.success) {
+        // Redirigir a la lista de robots después de un corto tiempo
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 2000);
+      }
+    } else {
+      // Crear un nuevo robot
+      const success = await uploadRobotToBackend(codeFile, avatar, robotName);
+      
+      if (success) {
+        // Redirigir a la lista de robots
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 2000);
+      }
+    }
   };
 
   const handleTest = () => {
@@ -266,15 +475,17 @@ class default1(Robot):
       return;
     }
     
-    console.log("Probando Robot...");
-    console.log("Code:", robotCode);
-    // TODO: Implement testing logic (maybe send to backend?)
+    swal({
+      title: "Probando robot",
+      text: "Esta función aún no está implementada completamente.",
+      icon: "info",
+    });
   };
 
   return (
     <div id="create-robot-container" style={{ padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>Crear Robot</h1>
+        <h1 style={{ margin: 0 }}>{pageTitle}</h1>
         <div>
           <button 
             onClick={handleSave} 
@@ -288,7 +499,7 @@ class default1(Robot):
               borderRadius: '4px'
             }}
           >
-            Guardar
+            {isEditMode ? 'Actualizar' : 'Guardar'}
           </button>
           <button 
             onClick={handleTest} 
@@ -333,7 +544,7 @@ class default1(Robot):
 
         {/* Right Column */}
         <div style={{ flex: '1' }}>
-          <AvatarUploader modifyAvatar={handleAvatarChange} />
+          <AvatarUploader modifyAvatar={handleAvatarChange} previewUrl={avatarPreview} />
           <RobotStats code={robotCode} />
         </div>
       </div>
