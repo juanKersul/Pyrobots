@@ -1,93 +1,348 @@
-#robot-list {
-    margin: 1% 2%;
+/* Estilos para el indicador de carga */
+.loading-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    margin: 20px 0;
 }
 
-#robot-list .block-robot {
-    display: flex;
-    flex-wrap: wrap;
-    min-width: 600px;
-    padding: 5px 10px 0px 10px;
-    flex: 0 1 600px;
-    margin: 10px;
-    background-color: lightgray;
-    box-shadow: 0 0 0 1px black;
-    border-radius: 15px;
-}
-
-#robot-list .block-robot p {
-    flex: 40%;
-    margin-left: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 400px;
-}
-
-#robot-list .block-robot img {
-    width: 40px;
-    height: 40px;
-    border: solid 0.5px black;
-    background-color: yellow;
-    border-radius: 15px;
-}
-
-#robot-list .block-robot .RobotName {
-    flex-basis: 400px;
-    height: 20px;
-    margin: 12px 5px 5px 5px;
-    font-size: large;
-    font-weight: bold;
-}
-
-#robot-list .block-robot .RobotId {
-    flex: none;
-    flex-basis: 65px;
-    height: 20px;
-    margin: 5px 0px 5px 72px;
-    border: solid 0.5px black;
-    background-color: LimeGreen;
-    border-radius: 15px;
-    text-align: center;
-    font-weight: bold;
-    padding: 4px;
-}
-
-#robots-loading {
-    background-color: #d3f80000;
-    width: 80%;
-    margin: 10% 0 0 34%;
-}
-
-#robots-loading .message {
-    padding: 3%;
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+.loading-container i {
     font-size: 40px;
-    color: #b8b8b8;
+    color: #1e88e5;
+    margin-bottom: 20px;
 }
 
-#robots-loading .spinner::before {
+.loading-container p {
+    font-size: 18px;
+    color: #aaa;
+}
+
+/* Estilos generales para el contenedor de robots */
+.robots-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Estilos para el encabezado */
+.robots-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.title-section h1 {
+    font-size: 32px;
+    margin: 0;
+    color: #fff;
+}
+
+.title-section p {
+    margin: 5px 0 0;
+    color: #aaa;
+    font-size: 16px;
+}
+
+.create-button {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.create-button i {
+    margin-right: 8px;
+}
+
+.create-button:hover {
+    background-color: #0d6efd;
+}
+
+/* Estilos para los filtros y búsqueda */
+.robots-filters {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.search-bar {
+    position: relative;
+    width: 60%;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px 12px 40px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-size: 16px;
+}
+
+.search-bar i {
     position: absolute;
-    width: 60px;
-    height: 60px;
-    top: 52%;
-    left: 50%;
-    border-radius: 50%;
-    border: solid 5px #cfd0d1;
-    border-bottom-color: #1c87c9;
-    animation: 1.5s linear infinite spinner;
-    animation-play-state: inherit;
-    content: "";
-    transform: translate3d(-50%, -50%, 0);
-    will-change: transform;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777;
 }
 
-@keyframes spinner {
-    0% {
-      transform: translate3d(-50%, -50%, 0) rotate(0deg);
+.filter-options {
+    display: flex;
+    gap: 15px;
+}
+
+.filter-dropdown select, .sort-dropdown select {
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Estilos para la barra de estado y conteo */
+.robots-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+}
+
+.robots-count .count {
+    background-color: #1a1a1a;
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.robots-count .active-count {
+    background-color: #006400;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.sort-button {
+    background-color: transparent;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.sort-button i {
+    margin-right: 8px;
+}
+
+/* Estilos para la cuadrícula de robots */
+.robots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+/* Estilos para las tarjetas de robot */
+.robot-card {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.robot-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.robot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+}
+
+.robot-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.menu-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.robot-type {
+    display: inline-block;
+    padding: 5px 15px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 20px;
+    border-radius: 4px;
+}
+
+.robot-avatar {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.robot-avatar img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.robot-stats {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: #252525;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat span:first-child {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+
+.win-count {
+    color: #4caf50;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.loss-count {
+    color: #f44336;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.ratio {
+    color: #ffc107;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.robot-actions {
+    display: flex;
+    padding: 20px 15px;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.edit-button, .battle-button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-button {
+    background-color: #3e3e3e;
+    color: white;
+}
+
+.battle-button {
+    background-color: #ff5722;
+    color: white;
+}
+
+.edit-button:hover {
+    background-color: #4a4a4a;
+}
+
+.battle-button:hover {
+    background-color: #e64a19;
+}
+
+.edit-button i, .battle-button i {
+    margin-right: 8px;
+}
+
+/* Estilos para el mensaje de no robots */
+.no-robots {
+    text-align: center;
+    padding: 40px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+}
+
+.no-robots p {
+    font-size: 18px;
+    color: #aaa;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .robots-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    100% {
-      transform: translate3d(-50%, -50%, 0) rotate(360deg);
+    
+    .create-button {
+        margin-top: 15px;
+        align-self: flex-end;
+    }
+    
+    .robots-filters {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .search-bar {
+        width: 100%;
+    }
+    
+    .filter-options {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .robots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     }
 }
