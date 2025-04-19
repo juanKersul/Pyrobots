@@ -12,27 +12,63 @@ const defaultdataPartida = {
 }
 
 async function servicioPartida(postData) {
+  console.log("Creando partida con datos:", postData);
   await axios
     .post(baseURL + "/match/add", postData)
     .then(function (response) {
-      swal({
-        text: 'Partida creada.',
-        icon: 'success',
-        timer: '1800'
-      });
-    })
-    .catch(function (error) {
-      if (error.response.status === 409) {
+      console.log("Respuesta al crear partida:", response.data);
+      // Verificar si la respuesta tiene el formato esperado
+      if (response.data && (response.data.id_match || response.data.id)) {
         swal({
-          text: error.response.data.detail,
-          icon: 'error'
+          text: 'Partida creada exitosamente.',
+          icon: 'success',
+          timer: '1800'
+        });
+      } else {
+        console.warn("Respuesta no estándar del servidor:", response.data);
+        swal({
+          text: 'Partida posiblemente creada, pero hubo un problema con la respuesta.',
+          icon: 'warning',
+          timer: '2500'
         });
       }
-      if (error.response.status === 422) {
-        swal({
-          text: error.response.data.detail[0].msg,
-          icon: 'error'
+    })
+    .catch(function (error) {
+      console.error("Error al crear partida:", error);
+      if (error.response) {
+        console.log("Detalles del error:", {
+          status: error.response.status,
+          data: error.response.data
         });
+        
+        if (error.response.status === 409) {
+          swal({
+            text: error.response.data.detail || "El nombre de la partida ya existe",
+            icon: 'error'
+          });
+        }
+        else if (error.response.status === 422) {
+          const errorMsg = error.response.data.detail && error.response.data.detail[0] ? 
+            error.response.data.detail[0].msg : 
+            "Error en los datos enviados";
+          swal({
+            text: errorMsg,
+            icon: 'error'
+          });
+        }
+        else {
+          swal({
+            text: 'Error en el servidor: ' + error.response.status,
+            icon: 'error'
+          });
+        }
+      } else {
+        swal({
+          text: 'Error de conexión con el servidor',
+          icon: 'error',
+          timer: '2500'
+        });
+        console.error("Error de conexión:", error);
       }
     });
 }

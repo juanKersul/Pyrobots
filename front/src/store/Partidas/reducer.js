@@ -18,7 +18,10 @@ function reducer(dataGame = defaultDataUser, action){
             [atrib]: data
         }
     };
-    if (action.type === 'GET_DATA_GAMES_USER') servicioListarGames(action.data);
+    if (action.type === 'GET_DATA_GAMES_USER') {
+        servicioListarGames(action.data);
+        return dataGame;
+    }
     else if (action.type === 'SEND_DATA_GAME') servicioPartida(dataGame, action.data); 
     else if (action.type === 'MODIFY_DATA_NAME_GAME') return dataGameChange("name", action.data);
     else if (action.type === 'MODIFY_DATA_MAX_PLAYERS_GAME') return dataGameChange("max_players", action.data); 

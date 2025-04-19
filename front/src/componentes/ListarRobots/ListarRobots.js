@@ -132,16 +132,13 @@ function ListarRobots({getDataRobotsUser, getImageRobotsUser}){
     // Manejar la edición de un robot - Ahora es funcional
     const handleEditRobot = (robot) => {
         console.log("Editar robot:", robot);
-
+        
         // Guardar el robot a editar en localStorage para que el componente de edición pueda acceder a él
-        // CONSIDERATION: Since AgregarRobot now fetches data directly via API,
-        // this localStorage step might be redundant, unless /subirRobot component relies on it.
         localStorage.setItem('robotToEdit', JSON.stringify(robot));
-
-        // Redireccionar a la página de edición del robot - CHANGE THE PATH HERE
+        
+        // Redireccionar a la página de edición del robot
         setTimeout(() => { // Pequeño retraso para asegurar que localStorage se actualiza
-            // history.push(`/agregarRobot?edit=true&id=${robot.id}`); // <-- OLD PATH
-            history.push(`/subirRobot?edit=true&id=${robot.id}`); // <-- NEW PATH
+            history.push(`/agregarRobot?edit=true&id=${robot.id}`);
         }, 100);
     };
     

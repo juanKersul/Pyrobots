@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from schemas import imatch
 from crud import match_service, websocket_services
 from pony.orm import db_session
@@ -71,10 +71,15 @@ async def read_matchs(token: str):
         token (str): recibe el token
 
     Returns:
-        str: Error.
-        List[Match]: Lista de partidas.
+        JSONResponse: Respuesta JSON con la lista de partidas o un error.
     """
-    msg = match_service.read_matchs(token)
-    if "'>' not supported between instances of 'int' and 'str'" in msg:
-        raise HTTPException(status_code=401, detail="No autorizado, debe logearse")
-    return msg
+    result = match_service.read_matchs(token)
+    
+    if "error" in result:
+        error_msg = result["error"]
+        status_code = 401 if "Token no válido" in error_msg else 500
+        if "RETURN_GENERATOR" in error_msg:
+            status_code = 500
+        raise HTTPException(status_code=status_code, detail=error_msg)
+    
+    return JSONResponse(content=result)

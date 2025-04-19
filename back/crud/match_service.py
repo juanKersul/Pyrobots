@@ -44,32 +44,31 @@ def find_by_username_or_email(user_creator: str):
 
 @db_session
 def create_match(match: imatch.MatchCreate):
-    with db_session:
-        decode_token = decode_JWT(match.token)
-        if decode_token["expiry"] > str(datetime.now()):
-            try:
-                creator_aux = find_by_username_or_email(match.user_creator)
-            except Exception as e:
-                return "ObjectNotFound"
-            try:
-                Match(
-                    name=match.name,
-                    max_players=abs(match.max_players),
-                    min_players=abs(match.min_players),
-                    password=encrypt_password(match.password),
-                    n_matchs=min(abs(match.n_matchs), 200),
-                    n_rounds_matchs=min(abs(match.n_rounds_matchs), 10000),
-                    users={
-                        creator_aux,
-                    },
-                    user_creator=creator_aux,
-                )
-                commit()
-            except Exception as e:
-                return str(e)
-        else:
-            return "Token no válido"
-        return "added"
+    decode_token = decode_JWT(match.token)
+    if decode_token["expiry"] > str(datetime.now()):
+        try:
+            creator_aux = find_by_username_or_email(match.user_creator)
+        except Exception as e:
+            return "ObjectNotFound"
+        try:
+            Match(
+                name=match.name,
+                max_players=abs(match.max_players),
+                min_players=abs(match.min_players),
+                password=encrypt_password(match.password),
+                n_matchs=min(abs(match.n_matchs), 200),
+                n_rounds_matchs=min(abs(match.n_rounds_matchs), 10000),
+                users={
+                    creator_aux,
+                },
+                user_creator=creator_aux,
+            )
+            commit()
+        except Exception as e:
+            return str(e)
+    else:
+        return "Token no válido"
+    return "added"
 
 
 @db_session
@@ -80,34 +79,53 @@ def read_matchs(token: str):
         token (str): token
 
     Returns:
-        str: En caso de error
-        List[Match]: Lista de partidas.
+        dict: Diccionario con la clave 'data' (lista de partidas) o 'error' (mensaje).
     """
-    with db_session:
-        decode_token = decode_JWT(token)
-        try:
-            if decode_token["expiry"] > str(datetime.now()):
-                matchs = select(x for x in Match)[:]
-                result = [
-                    {
-                        "id": p.id,
-                        "name": p.name,
-                        "max_players": p.max_players,
-                        "min_players": p.min_players,
-                        "n_matchs": p.n_matchs,
-                        "n_rounds_matchs": p.n_rounds_matchs,
-                        "user_creator": p.user_creator.username
-                        + ":"
-                        + p.user_creator.email,
-                    }
-                    for p in matchs
-                ]
-                commit()
-            else:
-                result = "Token no válido"
-        except Exception as e:
-            return str(e)
-        return result
+    decode_token = decode_JWT(token)
+    try:
+        if not (decode_token and decode_token.get("expiry") and decode_token["expiry"] > str(datetime.now())):
+            return {"error": "Token no válido o expirado"}
+
+        # Construir la lista de resultados dentro de la sesión
+        result = []
+        matches_query = Match.select() # Obtener el query
+
+        for p in matches_query: # Iterar sobre el query directamente
+            try:
+                creator_info = "Desconocido"
+                # Intentar acceder al creador y sus datos de forma segura
+                if p.user_creator: # Verificar si la relación existe
+                    # Usar getattr para seguridad adicional (como ya hicimos)
+                    username = getattr(p.user_creator, 'username', 'Inaccesible')
+                    email = getattr(p.user_creator, 'email', 'Inaccesible')
+                    creator_info = f"{username}:{email}"
+                else:
+                     creator_info = "Creador no asignado" # Caso explícito
+
+                match_data = {
+                    "id": p.id,
+                    "name": p.name,
+                    "max_players": p.max_players,
+                    "min_players": p.min_players,
+                    "n_matchs": p.n_matchs,
+                    "n_rounds_matchs": p.n_rounds_matchs,
+                    "user_creator": creator_info,
+                }
+                result.append(match_data)
+            except ObjectNotFound:
+                 print(f"Error: No se encontró el usuario creador para la partida ID {p.id}. Omitiendo.")
+                 # Podríamos añadir un marcador o simplemente omitir la partida
+            except Exception as e:
+                print(f"Error procesando partida ID {p.id}: {str(e)}. Omitiendo.")
+                # Omitir la partida si hay un error inesperado al procesarla
+
+        return {"data": result} # Devolver la lista construida
+
+    except Exception as e:
+        # Capturar errores generales (ej. problema con decode_JWT, consulta inicial)
+        error_msg = f"Error inesperado en read_matchs: {str(e)}"
+        print(error_msg)
+        return {"error": error_msg}
 
 
 @db_session
@@ -124,58 +142,79 @@ def read_match(id_match: int):
 
 @db_session
 def get_match_id(match_name: str):
-    result = select(m.id for m in Match if m.name == match_name)
-    for i in result:
-        return i
+    try:
+        match = Match.get(name=match_name)
+        return match.id if match else None
+    except:
+        return None
 
 
 @db_session
 def get_match_max_players(match_id: int):
-    query = select(m.max_players for m in Match if m.id == match_id)
-    for i in query:
-        result = i
-    return result
+    try:
+        match = Match.get(id=match_id)
+        return match.max_players if match else 0
+    except Exception as e:
+        print(f"Error en get_match_max_players: {str(e)}")
+        return 0
 
 
 @db_session
 def get_match_min_players(match_id: int):
-    query = select(m.min_players for m in Match if m.id == match_id)
-    for i in query:
-        result = i
-    return result
+    try:
+        match = Match.get(id=match_id)
+        return match.min_players if match else 0
+    except Exception as e:
+        print(f"Error en get_match_min_players: {str(e)}")
+        return 0
 
 
 @db_session
 def get_match_rounds(match_id: int):
-    query = select(m.n_rounds_matchs for m in Match if m.id == match_id)
-    for i in query:
-        result = i
-    return result
+    try:
+        match = Match.get(id=match_id)
+        return match.n_rounds_matchs if match else 0
+    except Exception as e:
+        print(f"Error en get_match_rounds: {str(e)}")
+        return 0
 
 
 @db_session
 def get_match_games(match_id: int):
-    query = select(m.n_matchs for m in Match if m.id == match_id)
-    for i in query:
-        result = i
-    return result
+    try:
+        match = Match.get(id=match_id)
+        return match.n_matchs if match else 0
+    except Exception as e:
+        print(f"Error en get_match_games: {str(e)}")
+        return 0
 
 
 @db_session
 def read_match_players(id_match: int):
-    str_result = []
-    with db_session:
-        result = select(m.users for m in Match if m.id == id_match)
-        for i in result:
-            str_result.append(i.username)
+    try:
+        match = Match.get(id=id_match)
+        if not match:
+            return []
+            
+        str_result = []
+        # Convertir explícitamente el conjunto de usuarios a una lista
+        for user in list(match.users):
+            str_result.append(user.username)
         return str_result
+    except Exception as e:
+        print(f"Error en read_match_players: {str(e)}")
+        return []
 
 
 @db_session
 def read_player_in_game(username: str, id_match: int):
-    result = select(m.users for m in Match if m.id == id_match)
-
-    return username in result
+    # Forzar evaluación completa de la consulta
+    result = list(select(m.users for m in Match if m.id == id_match))
+    if not result:
+        return False
+    # Verificar si el usuario está en la lista
+    users_list = list(result[0]) if result else []
+    return username in users_list
 
 
 @db_session
@@ -225,58 +264,57 @@ def add_player(id_match: int, tkn: str, id_robot: int):
 
 @db_session
 def remove_player(id_match: int, id_robot: int, name_user: str):
-    with db_session:
-        try:
-            result = "Dejo la partida"
-            match = Match[id_match]
-            user = User[name_user]
-            in_match = match.robots_in_match
-            in_match.remove(id_robot)
-            match.robots_in_match = in_match
-            match.users.remove(user)
-        except Exception as e:
-            error = ""
-            if "Match" in str(e):
-                error = "La partida no existe"
-            elif "User" in str(e):
-                error = "El usuario no existe"
-            return error
-        return result
+    try:
+        result = "Dejo la partida"
+        match = Match[id_match]
+        user = User[name_user]
+        in_match = list(match.robots_in_match)  # Convertir a lista Python
+        in_match.remove(id_robot)
+        match.robots_in_match = in_match
+        match.users.remove(user)
+    except Exception as e:
+        error = ""
+        if "Match" in str(e):
+            error = "La partida no existe"
+        elif "User" in str(e):
+            error = "El usuario no existe"
+        return error
+    return result
 
 
 @db_session
 def start_game(id_match: int, token: str):
-    with db_session:
-        decode_token = decode_JWT(token)
-        name_user = decode_token["userID"]
+    decode_token = decode_JWT(token)
+    name_user = decode_token["userID"]
+    try:
+        if decode_token["expiry"] == 0:
+            return "Token no valido"
+        if str(decode_token["expiry"]) < str(datetime.now()):
+            return "Token no valido"
         try:
-            if decode_token["expiry"] == 0:
-                return "Token no valido"
-            if str(decode_token["expiry"]) < str(datetime.now()):
-                return "Token no valido"
-            try:
-                msg = ""
-                match = Match[id_match]
-                user = User[name_user]
-                if not user.username == match.user_creator.username:
-                    msg = {"Status": "No es el creador de la partida"}
-                    return msg
-                match_robots = match.robots_in_match
-                if (len(match_robots) < get_match_min_players(id_match)) or (
-                    len(match_robots) > get_match_max_players(id_match)
-                ):
-                    msg = {"ObjectNotFound"}
-                    return msg
-            except Exception as e:
-                error = ""
-                if "Match" in str(e):
-                    error = {"Status": "La partida no existe"}
-                elif "User" in str(e):
-                    error = {"Status": "El usuario no existe"}
-                return error
+            msg = ""
+            match = Match[id_match]
+            user = User[name_user]
+            if not user.username == match.user_creator.username:
+                msg = {"Status": "No es el creador de la partida"}
+                return msg
+            # Convertir a lista Python concreta
+            match_robots = list(match.robots_in_match)
+            if (len(match_robots) < get_match_min_players(id_match)) or (
+                len(match_robots) > get_match_max_players(id_match)
+            ):
+                msg = {"ObjectNotFound"}
+                return msg
         except Exception as e:
-            return str(e)
-    return list(match_robots)
+            error = ""
+            if "Match" in str(e):
+                error = {"Status": "La partida no existe"}
+            elif "User" in str(e):
+                error = {"Status": "El usuario no existe"}
+            return error
+    except Exception as e:
+        return str(e)
+    return match_robots  # Asegurarse de devolver una lista concreta
 
 
 def parse_robots(robot_list: list):
@@ -410,8 +448,8 @@ def return_results(resultado: list):
 
 @db_session
 def delete_match(id_match: int):
-    with db_session:
-        try:
-            Match[id_match].delete()
-        except Exception as e:
-            return str(e)
+    try:
+        Match[id_match].delete()
+    except Exception as e:
+        return str(e)
+    return "Partida eliminada"
