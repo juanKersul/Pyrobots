@@ -8,10 +8,11 @@ function Listing({robots, getImageRobotsUser}) {
     const [listResults, setListResults] = useState([]);
 
     useEffect(() => {
+        console.log("Listing component - robots recibidos:", robots);
         getImageRobotsAndSaveInListImage(robots, getImageRobotsUser, setListResults);
     }, [robots, getImageRobotsUser])
 
-    return (<div id="robot-list"> {listResults} </div>);
+    return (<div id="robot-list"> {listResults.length === 0 ? <p>No se encontraron robots</p> : listResults} </div>);
 };
 
 function ListarRobots({getDataRobotsUser, getImageRobotsUser}){
@@ -19,8 +20,16 @@ function ListarRobots({getDataRobotsUser, getImageRobotsUser}){
     const [listRobots, setListRobots] = useState([]);
     
     useEffect(() => {
-        if(responseDataRobot) setListRobots(robotListUser());
-        else getDataRobotsUser(useResponseDataRobot);
+        console.log("ListarRobots - responseDataRobot:", responseDataRobot);
+        if(responseDataRobot) {
+            const robots = robotListUser();
+            console.log("Robots obtenidos de localStorage:", robots);
+            setListRobots(robots || []);
+        }
+        else {
+            console.log("Intentando obtener robots del servidor...");
+            getDataRobotsUser(useResponseDataRobot);
+        }
     }, [responseDataRobot, getDataRobotsUser]);
 
     return (<Listing robots={listRobots} getImageRobotsUser={getImageRobotsUser}/>);

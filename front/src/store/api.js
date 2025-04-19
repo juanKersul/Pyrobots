@@ -23,7 +23,9 @@ function getUserLogin(){
 
 function getToken(){
         const user = JSON.parse(localStorage.getItem('user'));
+        console.log("getToken - Datos de usuario en localStorage:", user);
         const token = (user)? user.token : '';
+        console.log("getToken - Token obtenido:", token);
     
         return token;
 }    

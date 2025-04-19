@@ -79,10 +79,36 @@ def read_robots(token: str):
         str: Error
         List[Robots]: Lista de robots.
     """
-    msg = robot_service.read_robots(token)
-    if "'>' not supported between instances of 'int' and 'str'" in msg:
-        raise HTTPException(status_code=401, detail="No autorizado, debe logearse")
-    return msg
+    try:
+        print(f"\n--- Endpoint /robots llamado con token: {token[:10]}... ---")
+        msg = robot_service.read_robots(token)
+        print(f"Resultado del servicio: {type(msg)}")
+        
+        if isinstance(msg, str):
+            print(f"Error en formato string: {msg}")
+            if "'>' not supported between instances of 'int' and 'str'" in msg:
+                raise HTTPException(status_code=401, detail="No autorizado, debe logearse")
+            # Si es otro mensaje de error
+            raise HTTPException(status_code=500, detail=msg)
+            
+        print(f"Devolviendo lista de robots: {len(msg)} encontrados")
+        return msg
+    except Exception as e:
+        # Capturar cualquier excepción no manejada
+        import traceback
+        error_msg = str(e)
+        print(f"Error no manejado en el endpoint: {error_msg}")
+        print(traceback.format_exc())
+        
+        status_code = 500
+        if "tuple index out of range" in error_msg:
+            error_msg = "Error al procesar los datos de robots. Contacte al administrador."
+            
+        # Verificar si 'detail' ya está en el mensaje (caso HTTPException)
+        if hasattr(e, 'detail'):
+            error_msg = e.detail
+            
+        raise HTTPException(status_code=status_code, detail=error_msg)
 
 @robot_end_points.get("/image")
 def get_image(token,robot_id):

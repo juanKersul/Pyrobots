@@ -85,18 +85,53 @@ def read_robots(token: str):
         List[Robot]: Lista de robots.
     """
     with db_session:
-        decode_token = decode_JWT(token)
-        result = []
         try:
+            print(f"Starting read_robots with token: {token[:10]}...")
+            decode_token = decode_JWT(token)
+            print(f"Decoded token: {decode_token}")
+            result = []
+
+            if "expiry" not in decode_token or "userID" not in decode_token:
+                print("Token inválido o mal formado - faltan campos")
+                return "Token inválido o mal formado"
+                
             if decode_token["expiry"] > str(datetime.now()):
-                user = decode_token["userID"]
-                robots = select(x for x in Robot if x.user_owner.username == user)
-                result = [irobot.Robot.from_orm(r) for r in robots]
-                commit()
+                user_id = decode_token["userID"]
+                print(f"User from token: {user_id}")
+                
+                # Verificar que el usuario existe en la base de datos
+                try:
+                    user_obj = User.get(username=user_id)
+                    print(f"Found user in DB: {user_obj is not None}")
+                    
+                    if not user_obj:
+                        return "Usuario no encontrado en la base de datos"
+                    
+                    # Obtener robots directamente de la relación en el usuario
+                    try:
+                        print(f"Getting robots through user's 'robots' relationship")
+                        robots = list(user_obj.robots)
+                        print(f"Found {len(robots)} robots for user {user_id}")
+                        
+                        # Convertir a formato de respuesta
+                        result = [irobot.Robot.from_orm(r) for r in robots]
+                        commit()
+                    except Exception as e:
+                        print(f"Error accessing user's robots: {str(e)}")
+                        return f"Error al obtener robots del usuario: {str(e)}"
+                except Exception as e:
+                    print(f"Error finding user: {str(e)}")
+                    return f"Error al buscar usuario: {str(e)}"
             else:
-                result = "Token no válido"
+                print("Token expired")
+                result = "Token no válido o expirado"
+                
         except Exception as e:
-            return str(e)
+            print(f"Top level error in read_robots: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            return f"Error interno: {str(e)}"
+            
         return result
 
 
